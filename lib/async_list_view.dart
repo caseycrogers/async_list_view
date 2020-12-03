@@ -3,6 +3,7 @@ library async_list_view;
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:stream_summary_builder/stream_summary_builder.dart';
 
@@ -16,6 +17,8 @@ import 'package:stream_summary_builder/stream_summary_builder.dart';
 ///
 /// `T` is the event type of the provided source stream.
 class AsyncListView<T> extends StatefulWidget {
+  Key? key;
+
   /// The Stream providing events for this ListView. AsyncListView will reuse
   /// an existing StreamSubscription if passed the same Stream twice so a
   /// non-broadcast stream can be safely used here.
@@ -31,10 +34,6 @@ class AsyncListView<T> extends StatefulWidget {
   /// elsewhere in the widget tree and don't want to re-fetch list elements.
   final List<T>? initialData;
 
-  /// The [ScrollController] to pass to the contained [ListView].
-  /// If null, a new [ScrollController] will be used.
-  final ScrollController? controller;
-
   /// A [Widget] to display at the end of the contained [ListView] if the
   /// user scrolls to the bottom of the [ListView] before the source [stream]
   /// is done.
@@ -44,14 +43,47 @@ class AsyncListView<T> extends StatefulWidget {
   /// finishes without producing any events.
   final Widget? noResultsWidget;
 
+  final Axis scrollDirection;
+  final bool reverse;
+  final ScrollController? controller;
+  final bool? primary;
+  final ScrollPhysics? physics;
+  final bool shrinkWrap;
+  final EdgeInsetsGeometry? padding;
+  final double? itemExtent;
+  final bool addAutomaticKeepAlives;
+  final bool addRepaintBoundaries;
+  final bool addSemanticIndexes;
+  final double? cacheExtent;
+  final DragStartBehavior dragStartBehavior;
+  final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
+  final String? restorationId;
+  final Clip clipBehavior;
+
   /// Creates an [AsyncListView] connected to the specified [stream].
   AsyncListView({
     required this.stream,
     required this.itemBuilder,
     this.initialData,
-    this.controller,
     this.loadingWidget,
     this.noResultsWidget,
+    // Generic ListView parameters.
+    this.scrollDirection = Axis.vertical,
+    this.reverse = false,
+    this.controller,
+    this.primary,
+    this.physics,
+    this.shrinkWrap = false,
+    this.padding,
+    this.itemExtent,
+    this.addAutomaticKeepAlives = true,
+    this.addRepaintBoundaries = true,
+    this.addSemanticIndexes = true,
+    this.cacheExtent,
+    this.dragStartBehavior = DragStartBehavior.start,
+    this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    this.restorationId,
+    this.clipBehavior = Clip.hardEdge,
   });
 
   @override
@@ -110,6 +142,15 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
         snapshot.connectionState == ConnectionState.done &&
         length == 0) return widget.noResultsWidget!;
     return ListView.builder(
+      key: widget.key,
+      scrollDirection: widget.scrollDirection,
+      reverse: widget.reverse,
+      controller: widget.controller,
+      primary: widget.primary,
+      physics: widget.physics,
+      shrinkWrap: widget.shrinkWrap,
+      padding: widget.padding,
+      itemExtent: widget.itemExtent,
       itemBuilder: (context, index) {
         if (index < length - 1) _pauseStream();
         if (index >= length - 1) _resumeStream();
@@ -121,7 +162,14 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
               widget.loadingWidget == null
           ? length
           : length + 1,
-      controller: widget.controller,
+      addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
+      addRepaintBoundaries: widget.addRepaintBoundaries,
+      addSemanticIndexes: widget.addSemanticIndexes,
+      cacheExtent: widget.cacheExtent,
+      dragStartBehavior: widget.dragStartBehavior,
+      keyboardDismissBehavior: widget.keyboardDismissBehavior,
+      restorationId: widget.restorationId,
+      clipBehavior: widget.clipBehavior,
     );
   }
 
