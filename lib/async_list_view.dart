@@ -7,14 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:stream_summary_builder/stream_summary_builder.dart';
 
 /// A wrapper around [StreamSummaryBuilder] and [ListView] that displays a
-/// a scrollable list of items lazily fetched from an asynchronous data source.
+/// scrollable list of items lazily fetched from an asynchronous data source.
 ///
 /// AsyncListView is useful for loading a list of results from an asynchronous
 /// database. Example use cases:
 ///  * display user chat history retrieved from Firestore.
 ///  * display search results for items on an online marketplace.
 ///
-/// 'T' is the event type of the provided source stream.
+/// `T` is the event type of the provided source stream.
 class AsyncListView<T> extends StatefulWidget {
   /// The Stream providing events for this ListView. AsyncListView will reuse
   /// an existing StreamSubscription if passed the same Stream twice so a

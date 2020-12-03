@@ -1,6 +1,6 @@
 name: async_list_view
-description: A Flutter Widget that wraps a ListView providing functionality for displaying entries coming from asynchronous streams.
-version: 0.0.1-dev.1
+description: A wrapper around [StreamSummaryBuilder] and [ListView] that displays a scrollable list of items lazily fetched from an asynchronous data source.
+version: 0.0.1-dev.2
 homepage: 'https://github.com/caseycrogers/async_list_view'
 
 environment:
