@@ -44,8 +44,11 @@ class _MyAppState extends State<MyApp> {
                 child: AsyncListView<String>(
                   stream: _fruitStream,
                   itemBuilder: _buildFruitTile,
-                  loadingWidget: Center(
-                      child: CircularProgressIndicator(key: GlobalKey())),
+                  loadingWidget: Text('  loading...',
+                      style: TextStyle(
+                          fontSize: 20.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black38)),
                 ),
               ),
             ],
