@@ -9,5 +9,5 @@ database. Example use cases:
  
 `T` is the event type of the provided source stream.
 
-*Disclaimer:* I have no idea what I'm doing and this package isn't unit tested.
+**Disclaimer:** I have no idea what I'm doing and this package isn't unit tested.
 Use at your own risk. Any contributions to this package are highly welcome.
