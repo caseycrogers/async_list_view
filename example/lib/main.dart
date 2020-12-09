@@ -15,6 +15,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   // Number of fruits loaded so far
   int _loadedFruits = 0;
+
   // Total number of fruits meeting the search criteria
   int _totalFruits = MockDatabase.countMatchingFruits('');
   String _searchString = '';
@@ -36,20 +37,35 @@ class _MyAppState extends State<MyApp> {
               ),
               Expanded(
                 child: AsyncListView<String>(
-                  // If the same stream is passed repeatedly into AsyncListView
-                  // AsyncListView will maintain its state and not erroneously
-                  // listen to the same stream twice.
-                  stream: _fruitStream,
-                  itemBuilder: _buildFruitTile,
-                  // Display 'loading...' text if the user scrolls past the
-                  // currently loaded fruits to let them know they need to wait
-                  // for more results.
-                  loadingWidget: Text('  loading...',
-                      style: TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black38)),
-                ),
+                    // If the same stream is passed repeatedly into AsyncListView
+                    // AsyncListView will maintain its state and not erroneously
+                    // listen to the same stream twice.
+                    stream: _fruitStream,
+                    itemBuilder: _buildFruitTile,
+                    // Display 'loading...' text if the user scrolls past the
+                    // currently loaded fruits to let them know they need to wait
+                    // for more results.
+                    loadingWidget: Text('  loading...',
+                        style: TextStyle(
+                            fontSize: 20.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black38)),
+                    noResultsWidgetBuilder: (context) {
+                      // The `ListView` builder will trample our loaded fruit count.
+                      // Reset the count here.
+                      Future.delayed(Duration(seconds: 0))
+                          .then((value) => setState(() {
+                                _loadedFruits = 0;
+                              }));
+                      return Text(
+                          'No fruits found for search term \'$_searchString\'. '
+                          'If you feel a fruit has excluded in error, please file a bug report:'
+                          '\n\nhttps://github.com/caseycrogers/async_list_view/issues/new?assignees=caseycrogers&labels=high-priority&template=fruit-request-template.md&title=%5BFruit%5D+Add+%3Cinsert-fruit-name-here%3E+to+the+Fruit+List',
+                          style: TextStyle(
+                              fontSize: 20.0,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black38));
+                    }),
               ),
             ],
           ),
