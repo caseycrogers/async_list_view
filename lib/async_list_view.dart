@@ -17,7 +17,7 @@ import 'package:stream_summary_builder/stream_summary_builder.dart';
 ///
 /// `T` is the event type of the provided source stream.
 class AsyncListView<T> extends StatefulWidget {
-  Key? key;
+  final Key? key;
 
   /// The Stream providing events for this ListView. AsyncListView will reuse
   /// an existing StreamSubscription if passed the same Stream twice so a
@@ -41,7 +41,7 @@ class AsyncListView<T> extends StatefulWidget {
 
   /// A [Widget] to display instead of the [ListView] if the source [stream]
   /// finishes without producing any events.
-  final Widget? noResultsWidget;
+  final WidgetBuilder? noResultsWidgetBuilder;
 
   final Axis scrollDirection;
   final bool reverse;
@@ -62,11 +62,12 @@ class AsyncListView<T> extends StatefulWidget {
 
   /// Creates an [AsyncListView] connected to the specified [stream].
   AsyncListView({
+    this.key,
     required this.stream,
     required this.itemBuilder,
     this.initialData,
     this.loadingWidget,
-    this.noResultsWidget,
+    this.noResultsWidgetBuilder,
     // Generic ListView parameters.
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
@@ -138,9 +139,9 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
 
   Widget _buildList(BuildContext context, AsyncSnapshot<List<T>> snapshot) {
     var length = snapshot.data?.length ?? 0;
-    if (widget.noResultsWidget != null &&
+    if (widget.noResultsWidgetBuilder != null &&
         snapshot.connectionState == ConnectionState.done &&
-        length == 0) return widget.noResultsWidget!;
+        length == 0) return widget.noResultsWidgetBuilder!(context);
     return ListView.builder(
       key: widget.key,
       scrollDirection: widget.scrollDirection,

@@ -21,13 +21,6 @@ class _MyAppState extends State<MyApp> {
   Stream<String> _fruitStream = MockDatabase.getFruits('');
 
   @override
-  void initState() {
-    super.initState();
-
-    _updateWithNewSearchString(_searchString);
-  }
-
-  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: SafeArea(
@@ -60,8 +53,7 @@ class _MyAppState extends State<MyApp> {
               ),
             ],
           ),
-          // Display how many fruits out of the fruits to-be-delivered by the
-          // stream to illustrate that AsyncListView is lazily loading fruits.
+          // Illustrate that AsyncListView is lazily loading fruits.
           floatingActionButton: FloatingActionButton.extended(
             label: Text('Fruits Loaded: $_loadedFruits/$_totalFruits'),
             onPressed: () {},
