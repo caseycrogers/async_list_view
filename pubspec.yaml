@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  stream_summary_builder: ^0.1.0-dev.5
+  stream_summary_builder: ^0.1.0-dev.6
 
 dev_dependencies:
   flutter_test:
