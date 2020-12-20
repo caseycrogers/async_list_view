@@ -7,3 +7,7 @@
 
 * Updated the example app to use `noResultsWidgetBuilder`.
 * Added new issue link to the example app for requesting new fruits.
+
+## [0.0.1-dev.8] - 12/20/2020
+
+* Bumped `StreamSummaryBuilder` version
