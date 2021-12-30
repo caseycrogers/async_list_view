@@ -1,13 +1,15 @@
 # async_list_view
 
-A wrapper around `StreamSummaryBuilder` and `ListView` that displays a
-scrollable list of items lazily fetched from an asynchronous data source.
-AsyncListView is useful for loading a list of results from an asynchronous
-database. Example use cases:
+Displays a scrollable list of items lazily fetched from an asynchronous data
+source. Async list view is a thin wrapper on top of `ListView.builder` and
+`StreamSummaryBuilder`.
+
+Because items are only fetched when they're visible to the user, async list
+view reduces potentially expensive database reads.
+
+Example use cases:
  * display user chat history retrieved from Firestore.
  * display search results for items on an online marketplace.
- 
-`T` is the event type of the provided source stream.
+ * display log lines read from a large file.
 
-**Disclaimer:** This package isn't unit tested (yet). Use at your own risk.
-Any contributions, bug reports or feature requests are  welcome.
+Any contributions, bug reports, or feature requests are  welcome.
