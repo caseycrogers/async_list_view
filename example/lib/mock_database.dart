@@ -37,7 +37,7 @@ final List<String> _fruits = [
   'passionfruit',
   'plum',
   'pomegranate',
-  'prickley pear',
+  'prickly pear',
   'prune',
   'quince',
   // The proper spelling (raspberry) is dumb and bad. Be the change you want
