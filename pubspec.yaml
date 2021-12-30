@@ -1,11 +1,11 @@
 name: async_list_view
-description: A wrapper around `StreamSummaryBuilder` and `ListView` that displays a scrollable list of items lazily fetched from an asynchronous data source.
+description: Displays a scrollable list of items lazily fetched from an asynchronous data source.
 version: 1.0.0
 homepage: 'https://github.com/caseycrogers/async_list_view'
 
 environment:
-  sdk: '>=2.12.0-0 <3.0.0'
-  flutter: '>=1.25.0-0'
+  sdk: '>=2.12.0 <3.0.0'
+  flutter: '>=1.25.0'
 
 dependencies:
   flutter:
