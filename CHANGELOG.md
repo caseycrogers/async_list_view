@@ -16,3 +16,7 @@
 
 * Updated dependency versions.
 * Added tests.
+
+## [1.0.1] - 01/08/2022
+
+* Added banner image

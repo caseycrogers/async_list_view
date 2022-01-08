@@ -1,6 +1,6 @@
 name: async_list_view
 description: Displays a scrollable list of items lazily fetched from an asynchronous data source.
-version: 1.0.0
+version: 1.0.1
 homepage: 'https://github.com/caseycrogers/async_list_view'
 
 environment:
