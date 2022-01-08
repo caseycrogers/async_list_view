@@ -1,4 +1,4 @@
-# async_list_view
+![](https://github.com/caseycrogers/async_list_view/blob/main/async_list_view_banner.png)
 
 Displays a scrollable list of items lazily fetched from an asynchronous data
 source. Async list view is a thin wrapper on top of `ListView.builder` and
