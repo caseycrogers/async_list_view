@@ -7,6 +7,14 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:stream_summary_builder/stream_summary_builder.dart';
 
+enum AsyncListViewInsertionDirection {
+  /// Insert new items at the end of the list.
+  end,
+
+  /// Insert new items at the beginning of the list.
+  beginning,
+}
+
 /// A wrapper around [StreamSummaryBuilder] and [ListView] that displays a
 /// scrollable list of lazily loaded stream elements.
 ///
@@ -25,6 +33,7 @@ class AsyncListView<T> extends StatefulWidget {
     this.initialData,
     this.loadingWidget,
     this.noResultsWidgetBuilder,
+    this.insertionDirection = AsyncListViewInsertionDirection.end,
     // Generic ListView parameters.
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
@@ -67,6 +76,12 @@ class AsyncListView<T> extends StatefulWidget {
   /// A [Widget] to display instead of the [ListView] if the source [stream]
   /// finishes without producing any events.
   final WidgetBuilder? noResultsWidgetBuilder;
+
+  /// Which side of the initialData to insert new events into.
+  /// This can be useful for situtions where the list is reversed in order to
+  /// achieve a chat-like effect.
+  /// Defaults to [AsyncListViewInsertionDirection.end].
+  final AsyncListViewInsertionDirection insertionDirection;
 
   /// The following attributes are all passed directly through to [ListView] as
   /// constructor arguments.
@@ -156,7 +171,13 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
     return StreamSummaryBuilder<T, List<T>>(
       initialData: _listSoFar,
       fold: (lst, newValue) {
-        _listSoFar = List.from(lst)..add(newValue);
+        final copiedList = List<T>.from(lst);
+        if (widget.insertionDirection ==
+            AsyncListViewInsertionDirection.beginning) {
+          _listSoFar = copiedList..insert(0, newValue);
+        } else {
+          _listSoFar = copiedList..add(newValue);
+        }
         // Return a copy to the avoid race conditions.
         return List.from(_listSoFar);
       },
