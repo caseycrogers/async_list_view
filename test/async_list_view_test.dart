@@ -2,11 +2,26 @@ import 'package:async_list_view/async_list_view.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+class _Item extends StatelessWidget {
+  const _Item({Key? key, required this.text}) : super(key: key);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 10,
+      child: Text(text),
+    );
+  }
+}
+
 void main() {
   Widget _boilerPlate({
     int itemCount = 1000,
     VoidCallback? onLoaded,
     List<int> initialData = const [],
+    InsertionDirection insertionDirection = InsertionDirection.end,
   }) {
     return Directionality(
       textDirection: TextDirection.ltr,
@@ -19,12 +34,8 @@ void main() {
           }),
           loadingWidget: const Text('loading'),
           initialData: initialData,
-          itemBuilder: (context, snap, index) {
-            return SizedBox(
-              height: 10,
-              child: Text('item${snap.data![index]}'),
-            );
-          },
+          insertionDirection: insertionDirection,
+          itemBuilder: (context, snap, index) => _Item(text: 'item$index'),
         ),
       ),
     );
@@ -83,6 +94,48 @@ void main() {
     expect(loaded, 0);
     expect(find.text('item0'), findsOneWidget);
     expect(find.text('item5'), findsNothing);
+
+    // Replace the async list view so that it disposes itself.
+    await tester.pumpWidget(Container());
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('AsyncListView can insert items at the beginning',
+      (WidgetTester tester) async {
+    int loaded = 0;
+    await tester.pumpWidget(_boilerPlate(
+      itemCount: 5,
+      onLoaded: () => loaded++,
+      initialData: [0, 1, 2, 3, 4],
+      insertionDirection: InsertionDirection.beginning,
+    ));
+
+    expect(loaded, 0);
+    expect(find.text('item0'), findsOneWidget);
+
+    await _iterativePump(tester, 5);
+
+    expect(loaded, 5);
+    final List<_Item> items =
+        tester.widgetList<_Item>(find.byType(_Item)).toList();
+
+    expect(
+      items.map((i) => i.text),
+      equals(
+        [
+          'item4',
+          'item3',
+          'item2',
+          'item1',
+          'item0',
+          'item0',
+          'item1',
+          'item2',
+          'item3',
+          'item4'
+        ],
+      ),
+    );
 
     // Replace the async list view so that it disposes itself.
     await tester.pumpWidget(Container());
