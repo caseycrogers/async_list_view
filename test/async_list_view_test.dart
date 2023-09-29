@@ -35,7 +35,8 @@ void main() {
           loadingWidget: const Text('loading'),
           initialData: initialData,
           insertionDirection: insertionDirection,
-          itemBuilder: (context, snap, index) => _Item(text: 'item$index'),
+          itemBuilder: (context, snap, index) =>
+              _Item(text: 'item${snap.data![index]}'),
         ),
       ),
     );
