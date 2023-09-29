@@ -193,7 +193,7 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
       return widget.noResultsWidgetBuilder!(context);
     }
 
-    final willShowLoadingWidget =
+    final shouldMakeSpaceForLoadingWidget =
         !(snapshot.connectionState == ConnectionState.done ||
             widget.loadingWidget == null);
 
@@ -229,7 +229,7 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
           return widget.itemBuilder(context, snapshot, index);
         }
 
-        if (willShowLoadingWidget) {
+        if (shouldMakeSpaceForLoadingWidget) {
           if (index > 1 && !streamShouldBeRunning) {
             _pauseStream();
           } else if (index == 1) {
@@ -250,7 +250,7 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
         return widget.itemBuilder(context, snapshot, index);
       },
       // Allow for an extra item in the list for the loading widget.
-      itemCount: willShowLoadingWidget ? length + 1 : length,
+      itemCount: shouldMakeSpaceForLoadingWidget ? length + 1 : length,
       addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
       addRepaintBoundaries: widget.addRepaintBoundaries,
       addSemanticIndexes: widget.addSemanticIndexes,
