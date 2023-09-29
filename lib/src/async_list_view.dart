@@ -245,6 +245,7 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
         if (index > 0 && !streamShouldBeRunning) {
           _pauseStream();
         } else if (index == 0) {
+          streamShouldBeRunning = true;
           _resumeStream();
         }
         return widget.itemBuilder(context, snapshot, index);
