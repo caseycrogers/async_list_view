@@ -7,7 +7,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:stream_summary_builder/stream_summary_builder.dart';
 
-enum AsyncListViewInsertionDirection {
+enum InsertionDirection {
   /// Insert new items at the end of the list.
   end,
 
@@ -33,7 +33,7 @@ class AsyncListView<T> extends StatefulWidget {
     this.initialData,
     this.loadingWidget,
     this.noResultsWidgetBuilder,
-    this.insertionDirection = AsyncListViewInsertionDirection.end,
+    this.insertionDirection = InsertionDirection.end,
     // Generic ListView parameters.
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
@@ -80,8 +80,8 @@ class AsyncListView<T> extends StatefulWidget {
   /// Which side of the initialData to insert new events into.
   /// This can be useful for situtions where the list is reversed in order to
   /// achieve a chat-like effect.
-  /// Defaults to [AsyncListViewInsertionDirection.end].
-  final AsyncListViewInsertionDirection insertionDirection;
+  /// Defaults to [InsertionDirection.end].
+  final InsertionDirection insertionDirection;
 
   /// The following attributes are all passed directly through to [ListView] as
   /// constructor arguments.
@@ -172,8 +172,7 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
       initialData: _listSoFar,
       fold: (lst, newValue) {
         final copiedList = List<T>.from(lst);
-        if (widget.insertionDirection ==
-            AsyncListViewInsertionDirection.beginning) {
+        if (widget.insertionDirection == InsertionDirection.beginning) {
           _listSoFar = copiedList..insert(0, newValue);
         } else {
           _listSoFar = copiedList..add(newValue);
