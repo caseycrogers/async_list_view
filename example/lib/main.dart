@@ -1,6 +1,5 @@
 import 'package:async_list_view/async_list_view.dart';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'mock_database.dart';

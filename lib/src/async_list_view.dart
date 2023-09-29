@@ -7,6 +7,14 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:stream_summary_builder/stream_summary_builder.dart';
 
+enum InsertionDirection {
+  /// Insert new items at the end of the list.
+  end,
+
+  /// Insert new items at the beginning of the list.
+  beginning,
+}
+
 /// A wrapper around [StreamSummaryBuilder] and [ListView] that displays a
 /// scrollable list of lazily loaded stream elements.
 ///
@@ -25,6 +33,7 @@ class AsyncListView<T> extends StatefulWidget {
     this.initialData,
     this.loadingWidget,
     this.noResultsWidgetBuilder,
+    this.insertionDirection = InsertionDirection.end,
     // Generic ListView parameters.
     this.scrollDirection = Axis.vertical,
     this.reverse = false,
@@ -67,6 +76,12 @@ class AsyncListView<T> extends StatefulWidget {
   /// A [Widget] to display instead of the [ListView] if the source [stream]
   /// finishes without producing any events.
   final WidgetBuilder? noResultsWidgetBuilder;
+
+  /// Which side of the initialData to insert new events into.
+  /// This can be useful for situtions where the list is reversed in order to
+  /// achieve a chat-like effect.
+  /// Defaults to [InsertionDirection.end].
+  final InsertionDirection insertionDirection;
 
   /// The following attributes are all passed directly through to [ListView] as
   /// constructor arguments.
@@ -156,7 +171,12 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
     return StreamSummaryBuilder<T, List<T>>(
       initialData: _listSoFar,
       fold: (lst, newValue) {
-        _listSoFar = List.from(lst)..add(newValue);
+        final copiedList = List<T>.from(lst);
+        if (widget.insertionDirection == InsertionDirection.beginning) {
+          _listSoFar = copiedList..insert(0, newValue);
+        } else {
+          _listSoFar = copiedList..add(newValue);
+        }
         // Return a copy to the avoid race conditions.
         return List.from(_listSoFar);
       },
@@ -172,6 +192,19 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
         length == 0) {
       return widget.noResultsWidgetBuilder!(context);
     }
+
+    final shouldMakeSpaceForLoadingWidget =
+        !(snapshot.connectionState == ConnectionState.done ||
+            widget.loadingWidget == null);
+
+    // This is necessary due to the forced order in which ListBuilder calls the
+    // itemBuilder. When operating in reverse, the ListBuilder will still call
+    // the itemBuilder in the original order.
+    // This ensures that if any item in this render cycle suggests the stream
+    // should be running, (i.e. the first in a reversed list), that this is
+    // adhered to.
+    bool streamShouldBeRunning = false;
+
     return ListView.builder(
       key: widget.key,
       scrollDirection: widget.scrollDirection,
@@ -183,21 +216,42 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
       padding: widget.padding,
       itemExtent: widget.itemExtent,
       itemBuilder: (context, index) {
-        if (index < length - 1) {
-          _pauseStream();
-        } else if (index >= length - 1) {
-          _resumeStream();
+        if (widget.insertionDirection == InsertionDirection.end) {
+          if (index < length && !streamShouldBeRunning) {
+            _pauseStream();
+          } else if (index >= length - 1) {
+            streamShouldBeRunning = true;
+            _resumeStream();
+          }
+          if (index == _listSoFar.length && widget.loadingWidget != null) {
+            return widget.loadingWidget;
+          }
+          return widget.itemBuilder(context, snapshot, index);
         }
-        if (index == _listSoFar.length) {
-          return widget.loadingWidget!;
+
+        if (shouldMakeSpaceForLoadingWidget) {
+          if (index > 1 && !streamShouldBeRunning) {
+            _pauseStream();
+          } else if (index == 1) {
+            streamShouldBeRunning = true;
+            _resumeStream();
+          }
+          if (index == 0) {
+            return widget.loadingWidget!;
+          }
+          return widget.itemBuilder(context, snapshot, index - 1);
+        }
+
+        if (index > 0 && !streamShouldBeRunning) {
+          _pauseStream();
+        } else if (index == 0) {
+          streamShouldBeRunning = true;
+          _resumeStream();
         }
         return widget.itemBuilder(context, snapshot, index);
       },
-      // Allow for an extra item past the list for the loading widget.
-      itemCount: snapshot.connectionState == ConnectionState.done ||
-              widget.loadingWidget == null
-          ? length
-          : length + 1,
+      // Allow for an extra item in the list for the loading widget.
+      itemCount: shouldMakeSpaceForLoadingWidget ? length + 1 : length,
       addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
       addRepaintBoundaries: widget.addRepaintBoundaries,
       addSemanticIndexes: widget.addSemanticIndexes,

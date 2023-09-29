@@ -2,10 +2,26 @@ import 'package:async_list_view/async_list_view.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+class _Item extends StatelessWidget {
+  const _Item({Key? key, required this.text}) : super(key: key);
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 10,
+      child: Text(text),
+    );
+  }
+}
+
 void main() {
   Widget _boilerPlate({
     int itemCount = 1000,
     VoidCallback? onLoaded,
+    List<int> initialData = const [],
+    InsertionDirection insertionDirection = InsertionDirection.end,
   }) {
     return Directionality(
       textDirection: TextDirection.ltr,
@@ -17,12 +33,10 @@ void main() {
             return i;
           }),
           loadingWidget: const Text('loading'),
-          itemBuilder: (context, snap, index) {
-            return SizedBox(
-              height: 10,
-              child: Text('item${snap.data![index]}'),
-            );
-          },
+          initialData: initialData,
+          insertionDirection: insertionDirection,
+          itemBuilder: (context, snap, index) =>
+              _Item(text: 'item${snap.data![index]}'),
         ),
       ),
     );
@@ -33,14 +47,14 @@ void main() {
     int loaded = 0;
     await tester.pumpWidget(_boilerPlate(onLoaded: () => loaded++));
     expect(loaded, 0);
-    expect(find.text('item1'), findsNothing);
+    expect(find.text('item0'), findsNothing);
     expect(find.text('loading'), findsOneWidget);
 
     // Wait for 5 items to load.
     await tester.pump(const Duration(milliseconds: 5));
     expect(loaded, 5);
     expect(find.text('item1'), findsOneWidget);
-    expect(find.text('item6'), findsNothing);
+    expect(find.text('item5'), findsNothing);
     expect(find.text('loading'), findsOneWidget);
 
     // Only as many items as are visible should load.
@@ -66,6 +80,64 @@ void main() {
     expect(find.text('item50'), findsOneWidget);
     expect(find.text('item60'), findsNothing);
     expect(find.text('loading'), findsNothing);
+
+    // Replace the async list view so that it disposes itself.
+    await tester.pumpWidget(Container());
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('AsyncListView can present initial data',
+      (WidgetTester tester) async {
+    int loaded = 0;
+    await tester.pumpWidget(_boilerPlate(
+        itemCount: 5, onLoaded: () => loaded++, initialData: [0, 1, 2, 3, 4]));
+
+    expect(loaded, 0);
+    expect(find.text('item0'), findsOneWidget);
+    expect(find.text('item5'), findsNothing);
+
+    // Replace the async list view so that it disposes itself.
+    await tester.pumpWidget(Container());
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('AsyncListView can insert items at the beginning',
+      (WidgetTester tester) async {
+    int loaded = 0;
+    await tester.pumpWidget(_boilerPlate(
+      itemCount: 5,
+      onLoaded: () => loaded++,
+      initialData: [0, 1, 2, 3, 4],
+      insertionDirection: InsertionDirection.beginning,
+    ));
+
+    expect(loaded, 0);
+    expect(find.text('item0'), findsOneWidget);
+
+    await _iterativePump(tester, 5);
+
+    expect(loaded, 5);
+
+    final List<_Item> items =
+        tester.widgetList<_Item>(find.byType(_Item)).toList();
+
+    expect(
+      items.map((i) => i.text),
+      equals(
+        [
+          'item4',
+          'item3',
+          'item2',
+          'item1',
+          'item0',
+          'item0',
+          'item1',
+          'item2',
+          'item3',
+          'item4'
+        ],
+      ),
+    );
 
     // Replace the async list view so that it disposes itself.
     await tester.pumpWidget(Container());
