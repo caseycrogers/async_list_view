@@ -217,9 +217,10 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
       itemExtent: widget.itemExtent,
       itemBuilder: (context, index) {
         if (widget.insertionDirection == InsertionDirection.end) {
-          if (index < length) {
+          if (index < length && !streamShouldBeRunning) {
             _pauseStream();
           } else if (index >= length - 1) {
+            streamShouldBeRunning = true;
             _resumeStream();
           }
           if (index == _listSoFar.length && widget.loadingWidget != null) {
