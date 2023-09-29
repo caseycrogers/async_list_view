@@ -117,6 +117,7 @@ void main() {
     await _iterativePump(tester, 5);
 
     expect(loaded, 5);
+
     final List<_Item> items =
         tester.widgetList<_Item>(find.byType(_Item)).toList();
 

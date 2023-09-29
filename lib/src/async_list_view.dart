@@ -192,6 +192,19 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
         length == 0) {
       return widget.noResultsWidgetBuilder!(context);
     }
+
+    final willShowLoadingWidget =
+        !(snapshot.connectionState == ConnectionState.done ||
+            widget.loadingWidget == null);
+
+    // This is necessary due to the forced order in which ListBuilder calls the
+    // itemBuilder. When operating in reverse, the ListBuilder will still call
+    // the itemBuilder in the original order.
+    // This ensures that if any item in this render cycle suggests the stream
+    // should be running, (i.e. the first in a reversed list), that this is
+    // adhered to.
+    bool streamShouldBeRunning = false;
+
     return ListView.builder(
       key: widget.key,
       scrollDirection: widget.scrollDirection,
@@ -203,21 +216,40 @@ class _AsyncListViewState<T> extends State<AsyncListView<T>> {
       padding: widget.padding,
       itemExtent: widget.itemExtent,
       itemBuilder: (context, index) {
-        if (index < length - 1) {
-          _pauseStream();
-        } else if (index >= length - 1) {
-          _resumeStream();
+        if (widget.insertionDirection == InsertionDirection.end) {
+          if (index < length) {
+            _pauseStream();
+          } else if (index >= length - 1) {
+            _resumeStream();
+          }
+          if (index == _listSoFar.length && widget.loadingWidget != null) {
+            return widget.loadingWidget;
+          }
+          return widget.itemBuilder(context, snapshot, index);
         }
-        if (index == _listSoFar.length) {
-          return widget.loadingWidget!;
+
+        if (willShowLoadingWidget) {
+          if (index > 1 && !streamShouldBeRunning) {
+            _pauseStream();
+          } else if (index == 1) {
+            streamShouldBeRunning = true;
+            _resumeStream();
+          }
+          if (index == 0) {
+            return widget.loadingWidget!;
+          }
+          return widget.itemBuilder(context, snapshot, index - 1);
+        }
+
+        if (index > 0 && !streamShouldBeRunning) {
+          _pauseStream();
+        } else if (index == 0) {
+          _resumeStream();
         }
         return widget.itemBuilder(context, snapshot, index);
       },
-      // Allow for an extra item past the list for the loading widget.
-      itemCount: snapshot.connectionState == ConnectionState.done ||
-              widget.loadingWidget == null
-          ? length
-          : length + 1,
+      // Allow for an extra item in the list for the loading widget.
+      itemCount: willShowLoadingWidget ? length + 1 : length,
       addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
       addRepaintBoundaries: widget.addRepaintBoundaries,
       addSemanticIndexes: widget.addSemanticIndexes,
